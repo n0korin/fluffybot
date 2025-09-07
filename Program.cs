@@ -8,7 +8,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 class Program
 {
-    private static readonly string Token = Environment.GetEnvironmentVariable("7629993792:AAF92f-nvxQB-TaCdnJ7FS9BnlsZvntlF7s");
+    private static readonly string Token = Environment.GetEnvironmentVariable("BOT_TOKEN");
     private static readonly string SiteUrl = "https://natribu.org";
     private static readonly string ManagerUrl = "https://t.me/Fluffy_Manager";
     private static readonly string ReviewsUrl = "https://docs.google.com/";
