@@ -1,47 +1,52 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Exceptions;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Polling;
+using Microsoft.AspNetCore.Builder; // для WebApplication
 
 class Program
 {
-    private static readonly string Token = Environment.GetEnvironmentVariable("BOT_TOKEN");
+    private static readonly string Token =
+        Environment.GetEnvironmentVariable("BOT_TOKEN")
+        ?? throw new Exception("BOT_TOKEN не задан!");
+
     private static readonly string SiteUrl = "https://natribu.org";
     private static readonly string ManagerUrl = "https://t.me/Fluffy_Manager";
     private static readonly string ReviewsUrl = "https://docs.google.com/";
 
     static async Task Main()
     {
-        var botClient = new TelegramBotClient(Token);
-        var me = await botClient.GetMeAsync();
-        Console.WriteLine($"Бот @{me.Username} запущен...");
+        // Запускаем Telegram-бота
+        var bot = new TelegramBotClient(Token);
+        bot.StartReceiving(
+            updateHandler: HandleUpdateAsync,
+            pollingErrorHandler: HandleErrorAsync
+        );
 
-        using var cts = new CancellationTokenSource();
+        Console.WriteLine("Бот запущен...");
 
-        // простой цикл получения обновлений
-        var offset = 0;
-        while (!cts.Token.IsCancellationRequested)
-        {
-            var updates = await botClient.GetUpdatesAsync(offset, cancellationToken: cts.Token);
-            foreach (var update in updates)
-            {
-                offset = update.Id + 1;
-                await HandleUpdateAsync(botClient, update, cts.Token);
-            }
+        // --- Минимальный Web Service для Render ---
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        var builder = WebApplication.CreateBuilder();
+        var app = builder.Build();
 
-            await Task.Delay(1000);
-        }
+        // Один эндпоинт, чтобы Render видел порт как активный
+        app.MapGet("/", () => "Bot is running!");
+
+        // Привязываем к порту Render
+        app.Urls.Add($"http://*:{port}");
+
+        // Запускаем Web Service в фоне
+        _ = Task.Run(() => app.Run());
+
+        // Держим главный поток живым
+        await Task.Delay(-1);
     }
 
-    private static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken ct)
     {
-        if (update.Message is null || update.Message.Text is null) return;
-
-        var chatId = update.Message.Chat.Id;
-        var text = update.Message.Text;
+        if (update.Message is not { } message) return;
+        var text = message.Text ?? string.Empty;
 
         if (text == "/start")
         {
@@ -52,17 +57,28 @@ class Program
             })
             { ResizeKeyboard = true };
 
-            await botClient.SendTextMessageAsync(chatId, "Привет 👋 Добро пожаловать!\nВыберите действие на клавиатуре снизу 👇", replyMarkup: keyboard);
+            await bot.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: "Привет 👋 Добро пожаловать!\n\nВыберите действие на клавиатуре снизу 👇",
+                replyMarkup: keyboard,
+                cancellationToken: ct
+            );
             return;
         }
 
         if (text == "🌐 Сайт")
-            await botClient.SendTextMessageAsync(chatId, $"Наш сайт: {SiteUrl}");
+            await bot.SendTextMessageAsync(message.Chat.Id, $"Наш сайт: {SiteUrl}", cancellationToken: ct);
         else if (text == "💬 Менеджер")
-            await botClient.SendTextMessageAsync(chatId, $"Связаться с менеджером: {ManagerUrl}");
+            await bot.SendTextMessageAsync(message.Chat.Id, $"Связаться с менеджером: {ManagerUrl}", cancellationToken: ct);
         else if (text == "⭐ Отзывы")
-            await botClient.SendTextMessageAsync(chatId, $"Отзывы: {ReviewsUrl}");
+            await bot.SendTextMessageAsync(message.Chat.Id, $"Отзывы: {ReviewsUrl}", cancellationToken: ct);
         else
-            await botClient.SendTextMessageAsync(chatId, "Выберите кнопку снизу 👇");
+            await bot.SendTextMessageAsync(message.Chat.Id, "Выберите кнопку снизу 👇", cancellationToken: ct);
+    }
+
+    private static Task HandleErrorAsync(ITelegramBotClient bot, Exception ex, CancellationToken ct)
+    {
+        Console.WriteLine($"Ошибка: {ex.Message}");
+        return Task.CompletedTask;
     }
 }
