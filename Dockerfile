@@ -1,22 +1,22 @@
-# Используем официальный .NET SDK для сборки
+# Сборка
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
 
-# Копируем проект и восстанавливаем зависимости
+# Копируем csproj и восстанавливаем пакеты
 COPY *.csproj ./
 RUN dotnet restore
 
-# Копируем остальные файлы и билдим
+# Копируем весь код
 COPY . ./
+
+# Публикуем релиз
 RUN dotnet publish -c Release -o out
 
-# Используем runtime-образ для запуска
-FROM mcr.microsoft.com/dotnet/runtime:7.0
+# Runtime-образ
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /app/out ./
 
-# Устанавливаем переменную окружения (необязательно)
-ENV DOTNET_RUNNING_IN_CONTAINER=true
+# Точка входа
+ENTRYPOINT ["dotnet", "TelegramBotDemo.dll"]
 
-# Команда запуска
-CMD ["dotnet", "TelegramBotDemo.dll"]

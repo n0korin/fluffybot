@@ -2,7 +2,7 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Polling;
-using Microsoft.AspNetCore.Builder; // для WebApplication
+using Microsoft.AspNetCore.Builder;
 
 class Program
 {
@@ -16,8 +16,9 @@ class Program
 
     static async Task Main()
     {
-        // Запускаем Telegram-бота
         var bot = new TelegramBotClient(Token);
+
+        // Запуск приема сообщений
         bot.StartReceiving(
             updateHandler: HandleUpdateAsync,
             pollingErrorHandler: HandleErrorAsync
@@ -25,19 +26,12 @@ class Program
 
         Console.WriteLine("Бот запущен...");
 
-        // --- Минимальный Web Service для Render ---
+        // --- Фейковый Web Service для Render ---
         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
         var builder = WebApplication.CreateBuilder();
         var app = builder.Build();
-
-        // Один эндпоинт, чтобы Render видел порт как активный
-        app.MapGet("/", () => "Bot is running!");
-
-        // Привязываем к порту Render
         app.Urls.Add($"http://*:{port}");
-
-        // Запускаем Web Service в фоне
-        _ = Task.Run(() => app.Run());
+        _ = Task.Run(() => app.Run()); // запускаем в фоне
 
         // Держим главный поток живым
         await Task.Delay(-1);
