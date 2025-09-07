@@ -5,11 +5,10 @@ using Telegram.Bot.Polling;
 
 class Program
 {
-    private static readonly string Token =
-        Environment.GetEnvironmentVariable("BOT_TOKEN")
-        ?? throw new Exception("BOT_TOKEN не задан!");
+    // Вставь сюда токен своего бота
+    private static readonly string Token = "7629993792:AAF92f-nvxQB-TaCdnJ7FS9BnlsZvntlF7s";
 
-    private static readonly string SiteUrl = "https://natribu.org";
+    private static readonly string SiteUrl = "https://n0korin.github.io/fluffy-site";
     private static readonly string ManagerUrl = "https://t.me/Fluffy_Manager";
     private static readonly string ReviewsUrl = "https://t.me/+lq9BzdMIr-hlYzhi";
 
