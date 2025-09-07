@@ -1,0 +1,9 @@
+# flyctl launch added from .gitignore
+# Visual Studio
+**\.vs
+**\bin
+**\obj
+**\*.user
+**\*.suo
+**\*.log
+fly.toml

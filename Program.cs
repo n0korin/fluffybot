@@ -2,7 +2,6 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Polling;
-using Microsoft.AspNetCore.Builder;
 
 class Program
 {
@@ -26,14 +25,7 @@ class Program
 
         Console.WriteLine("Бот запущен...");
 
-        // --- Фейковый Web Service для Render ---
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        var builder = WebApplication.CreateBuilder();
-        var app = builder.Build();
-        app.Urls.Add($"http://*:{port}");
-        _ = Task.Run(() => app.Run()); // запускаем в фоне
-
-        // Держим главный поток живым
+        // Держим главный поток живым (background worker)
         await Task.Delay(-1);
     }
 
@@ -53,7 +45,7 @@ class Program
 
             await bot.SendTextMessageAsync(
                 chatId: message.Chat.Id,
-                text: "Привет 👋 Добро пожаловать!\n\nВыберите действие на клавиатуре снизу 👇",
+                text: "Хай 👋 Это наш бот телеграмм канала Fluffy\n\nВыберите действие на клавиатуре снизу 👇",
                 replyMarkup: keyboard,
                 cancellationToken: ct
             );
