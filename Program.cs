@@ -12,7 +12,7 @@ class Program
 
     private static readonly string SiteUrl = "https://natribu.org";
     private static readonly string ManagerUrl = "https://t.me/Fluffy_Manager";
-    private static readonly string ReviewsUrl = "https://docs.google.com/";
+    private static readonly string ReviewsUrl = "https://t.me/+lq9BzdMIr-hlYzhi";
 
     static async Task Main()
     {
