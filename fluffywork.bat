@@ -6,7 +6,7 @@ REM --- Путь к проекту бота ---
 set BOT_PATH="C:\Users\catbo\fluffybot\TelegramBotDemo\TelegramBotDemo.csproj"
 
 REM --- Токен бота ---
-set BOT_TOKEN=7629993792:AAF92f-nvxQB-TaCdnJ7FS9BnlsZvntlF7s
+set BOT_TOKEN=-----
 
 REM --- Переходим в папку проекта ---
 cd /d "C:\Users\catbo\fluffybot\TelegramBotDemo"
